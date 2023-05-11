@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import umc.blog.dto.PostDto;
 import umc.blog.dto.PostEditDto;
-import umc.blog.entity.Post;
 import umc.blog.exception.InputValidateException;
 import umc.blog.exception.ExceptionResponse;
 import umc.blog.exception.TargetNotFoundException;
@@ -20,6 +19,16 @@ public class PostController {
     @Autowired
     public PostController(PostService postService) {
         this.postService = postService;
+    }
+
+    // 특정 글 조회 (id)
+    @GetMapping("/{id}")
+    ResponseEntity<?> findPostById(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(postService.findOne(id));
+        } catch (TargetNotFoundException e) {
+            return errorMessage(e.getMessage());
+        }
     }
 
     // 글 생성

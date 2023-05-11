@@ -34,9 +34,24 @@ public class PostController {
         try {
             return ResponseEntity.ok(postService.edit(id, editDto));
         } catch (InputValidateException | TargetNotFoundException e) {
-            ExceptionResponse exceptionResponse = new ExceptionResponse(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(exceptionResponse);
+            return errorMessage(e.getMessage());
         }
+    }
+
+    // 글 삭제
+    @DeleteMapping("/{id}")
+    ResponseEntity<?> deletePost(@PathVariable Long id) {
+        try {
+            postService.delete(id);
+            return ResponseEntity.status(HttpStatus.OK).body("글 삭제 완료");
+        } catch (TargetNotFoundException e) {
+            return errorMessage(e.getMessage());
+        }
+    }
+
+    private static ResponseEntity<ExceptionResponse> errorMessage(String e) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(e);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(exceptionResponse);
     }
 }

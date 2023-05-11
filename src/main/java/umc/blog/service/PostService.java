@@ -19,6 +19,11 @@ public class PostService {
         this.postRepository = postRepository;
     }
 
+    // 특정 글 조회 (id)
+    public Post findOne(Long id) {
+        return postRepository.findById(id).orElseThrow(() -> new TargetNotFoundException("target not found"));
+    }
+
     // 글 생성
     @Transactional
     public Post write(PostDto postDto) {

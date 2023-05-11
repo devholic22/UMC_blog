@@ -48,6 +48,13 @@ public class PostService {
         return targetPost;
     }
 
+    // 글 삭제
+    @Transactional
+    public void delete(Long id) {
+        postRepository.findById(id).orElseThrow(() -> new TargetNotFoundException("target not found"));
+        postRepository.deleteById(id);
+    }
+
     public void validateInput(PostEditDto editDto) {
         if (editDto.getTitle() == null || editDto.getContent() == null)
             throw new InputValidateException("validation error");

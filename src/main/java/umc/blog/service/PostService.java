@@ -22,6 +22,8 @@ public class PostService {
     // 글 생성
     @Transactional
     public Post write(PostDto postDto) {
+        validatePostDtoInput(postDto);
+
         Post newPost = Post.builder().
                 writer("익명"). // 원래 FK이기 때문에 숫자를 정의하는 게 좋지만 익명임을 나타내기 위해 이렇게 설정
                         title(postDto.getTitle()).
@@ -36,7 +38,7 @@ public class PostService {
     // 글 수정
     @Transactional
     public Post edit(Long id, PostEditDto editDto) {
-        validateInput(editDto);
+        validatePostEditDtoInput(editDto);
 
         Post targetPost = postRepository.findById(id).orElseThrow(
                 () -> new TargetNotFoundException("target not found")
@@ -55,8 +57,13 @@ public class PostService {
         postRepository.deleteById(id);
     }
 
-    public void validateInput(PostEditDto editDto) {
+    public void validatePostEditDtoInput(PostEditDto editDto) {
         if (editDto.getTitle() == null || editDto.getContent() == null)
+            throw new InputValidateException("validation error");
+    }
+
+    public void validatePostDtoInput(PostDto postDto) {
+        if (postDto.getTitle() == null || postDto.getContent() == null)
             throw new InputValidateException("validation error");
     }
 }

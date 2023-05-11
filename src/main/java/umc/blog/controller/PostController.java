@@ -24,8 +24,12 @@ public class PostController {
 
     // 글 생성
     @PostMapping
-    ResponseEntity<Post> createPost(@RequestBody PostDto postDto) {
-        return ResponseEntity.ok(postService.write(postDto));
+    ResponseEntity<?> createPost(@RequestBody PostDto postDto) {
+        try {
+            return ResponseEntity.ok(postService.write(postDto));
+        } catch (InputValidateException e) {
+            return errorMessage(e.getMessage());
+        }
     }
 
     // 글 수정

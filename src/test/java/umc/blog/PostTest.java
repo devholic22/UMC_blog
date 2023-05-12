@@ -60,4 +60,26 @@ public class PostTest {
         // then
         assertThat(targetPost.getTitle()).isEqualTo("첫 번째 글 (수정)");
     }
+
+    @Test
+    @DisplayName("글 삭제 테스트")
+    void delete() {
+        // given
+        Post newPost1 = Post.builder().writer("익명").title("첫 번째 글").content("첫 번째 글 내용").build();
+        Post newPost2 = Post.builder().writer("익명").title("두 번째 글").content("두 번째 글 내용").build();
+        Post newPost3 = Post.builder().writer("익명").title("세 번째 글").content("세 번째 글 내용").build();
+
+        // when
+        postRepository.save(newPost1);
+        postRepository.save(newPost2);
+        postRepository.save(newPost3);
+        postRepository.deleteById(newPost1.getId());
+        List<Post> result = postRepository.findAll();
+
+        // then
+        assertThat(result.size()).isEqualTo(2);
+        assertThat(result.contains(newPost1)).isFalse();
+        assertThat(result.contains(newPost2)).isTrue();
+        assertThat(result.contains(newPost3)).isTrue();
+    }
 }

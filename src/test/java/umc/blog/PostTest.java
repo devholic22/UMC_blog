@@ -4,8 +4,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.transaction.annotation.Transactional;
 import umc.blog.dto.PostDto;
+import umc.blog.dto.PostEditDto;
 import umc.blog.entity.Post;
 import umc.blog.exception.InputValidateException;
 import umc.blog.exception.TargetNotFoundException;
@@ -104,6 +106,61 @@ public class PostTest {
 
         // then
         assertThat(targetPost.getTitle()).isEqualTo("첫 번째 글 (수정)");
+    }
+
+    @Test
+    @DisplayName("글 수정 테스트 - Service를 사용")
+    void editUsingService() {
+        // given
+        PostDto postDto = new PostDto();
+        postDto.setTitle("첫 번째 글");
+        postDto.setContent("첫 번째 글 내용");
+
+        // when
+        Post targetPost = postService.write(postDto);
+        PostEditDto editDto = new PostEditDto();
+        editDto.setTitle("첫 번째 글 (수정)");
+        editDto.setContent("첫 번째 글 내용");
+        postService.edit(targetPost.getId(), editDto);
+
+        // then
+        assertThat(targetPost.getTitle()).isEqualTo("첫 번째 글 (수정)");
+    }
+
+    @Test
+    @DisplayName("글 수정 테스트 - 실패 케이스 (Service 사용)")
+    void editFail() {
+        // given
+        PostDto postDto = new PostDto();
+        postDto.setTitle("첫 번째 글");
+        postDto.setContent("첫 번째 글 내용");
+
+        // when
+        Post targetPost = postService.write(postDto);
+        PostEditDto editDto = new PostEditDto();
+        editDto.setTitle(null);
+        editDto.setContent("첫 번째 글 내용");
+
+        PostEditDto successEditDto = new PostEditDto();
+        successEditDto.setContent("첫 번째 글 (수정)");
+        successEditDto.setTitle("첫 번째 글 내용");
+
+        // then
+        assertThrows(InputValidateException.class, () -> {
+            postService.edit(targetPost.getId(), editDto);
+        });
+        assertThrows(InputValidateException.class, () -> {
+            postService.edit(10000L, editDto);
+        });
+        assertThrows(TargetNotFoundException.class, () -> {
+            postService.edit(10000L, successEditDto);
+        });
+        assertThrows(InvalidDataAccessApiUsageException.class, () -> {
+            postService.edit(null, successEditDto);
+        });
+        assertThrows(NullPointerException.class, () -> {
+            postService.edit(targetPost.getId(), null);
+        });
     }
 
     @Test

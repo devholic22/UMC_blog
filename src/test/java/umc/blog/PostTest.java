@@ -5,26 +5,32 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import umc.blog.dto.PostDto;
 import umc.blog.entity.Post;
+import umc.blog.exception.InputValidateException;
 import umc.blog.exception.TargetNotFoundException;
 import umc.blog.repository.PostRepository;
+import umc.blog.service.PostService;
 
 import javax.sql.DataSource;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
 public class PostTest {
     private final DataSource dataSource;
     private final PostRepository postRepository;
+    private final PostService postService;
 
     @Autowired
-    public PostTest(DataSource dataSource, PostRepository postRepository) {
+    public PostTest(DataSource dataSource, PostRepository postRepository, PostService postService) {
         this.dataSource = dataSource;
         this.postRepository = postRepository;
+        this.postService = postService;
     }
 
     @Test
@@ -43,6 +49,45 @@ public class PostTest {
 
         // then
         assertThat(result.size()).isEqualTo(3);
+        assertThat(result.contains(newPost1)).isTrue();
+        assertThat(result.contains(newPost2)).isTrue();
+        assertThat(result.contains(newPost3)).isTrue();
+    }
+
+    @Test
+    @DisplayName("글 생성 및 저장 테스트 - Service를 사용")
+    void saveUsingService() {
+        // given
+        PostDto postDto = new PostDto();
+        postDto.setTitle("첫 번째 글");
+        postDto.setContent("첫 번째 글 내용");
+
+        // when
+        Post wrotePost = postService.write(postDto);
+        Post targetPost = postRepository.findById(wrotePost.getId()).orElseThrow(
+                () -> new TargetNotFoundException("target not found")
+        );
+
+        // then
+        assertThat(wrotePost.getId()).isEqualTo(1);
+        assertThat(targetPost).isEqualTo(wrotePost);
+    }
+
+    @Test
+    @DisplayName("글 생성 및 저장 테스트 - 실패 케이스 (Service 사용)")
+    void saveFail() {
+        // given
+        PostDto postDto = new PostDto();
+        postDto.setTitle(null);
+        postDto.setContent("첫 번째 글 내용");
+
+        // when & then
+        assertThrows(InputValidateException.class, () -> {
+            postService.write(postDto);
+        });
+        assertThrows(NullPointerException.class, () -> {
+            postService.write(null);
+        });
     }
 
     @Test

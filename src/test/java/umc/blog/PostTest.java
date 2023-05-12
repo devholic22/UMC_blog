@@ -183,5 +183,44 @@ public class PostTest {
         assertThat(result.contains(newPost1)).isFalse();
         assertThat(result.contains(newPost2)).isTrue();
         assertThat(result.contains(newPost3)).isTrue();
+        assertThat(postRepository.findById(newPost1.getId())).isEmpty();
+    }
+
+    @Test
+    @DisplayName("글 삭제 테스트 - Service를 사용")
+    void deleteUsingService() {
+        // given
+        PostDto newPostDto = new PostDto();
+        newPostDto.setTitle("첫 번째 글");
+        newPostDto.setContent("첫 번째 글 내용");
+
+        Post targetPost = postService.write(newPostDto);
+
+        // when
+        postService.delete(targetPost.getId());
+
+        // then
+        assertThrows(TargetNotFoundException.class, () -> {
+            postService.findOne(targetPost.getId());
+        });
+    }
+
+    @Test
+    @DisplayName("글 삭제 테스트 - 실패 케이스 (Service 사용)")
+    void deleteFail() {
+        // given
+        PostDto newPostDto = new PostDto();
+        newPostDto.setTitle("첫 번째 글");
+        newPostDto.setContent("첫 번째 글 내용");
+
+        postService.write(newPostDto);
+
+        // when
+        assertThrows(TargetNotFoundException.class, () -> {
+            postService.delete(10000L);
+        });
+        assertThrows(InvalidDataAccessApiUsageException.class, () -> {
+            postService.delete(null);
+        });
     }
 }

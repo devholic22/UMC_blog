@@ -15,7 +15,9 @@ public class Post {
     @Column(name = "post_id")
     Long id;
 
-    String writer;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User writer;
 
     String title;
 
